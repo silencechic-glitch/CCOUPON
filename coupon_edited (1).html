@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>할인쿠폰 기본설정</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',sans-serif;background:#fff;color:#222;display:flex;height:100vh;overflow:hidden}
+
+/* ── 좌측 사이드바 ── */
+.sidebar{
+  width:220px;min-width:220px;background:#fff;
+  border-right:1px solid #dddaf0;
+  display:flex;flex-direction:column;
+  overflow-y:auto;height:100vh;
+}
+.sidebar-top{
+  background:#6B3FA0;color:#fff;
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  font-size:14px;font-weight:600;flex-shrink:0;
+}
+.sidebar-top select{
+  background:#6B3FA0;color:#fff;border:none;font-size:14px;font-weight:600;
+  cursor:pointer;flex:1;appearance:none;outline:none;
+}
+.sidebar-top-icon{
+  width:28px;height:28px;border:1px solid rgba(255,255,255,0.4);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+}
+
+/* L1 그룹 헤더 */
+.nav-group-header{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 14px;font-size:13px;font-weight:600;color:#333;
+  background:#f7f5fc;border-bottom:1px solid #e8e4f4;cursor:pointer;
+  user-select:none;
+}
+.nav-group-header .caret{
+  width:18px;height:18px;border:1.5px solid #6B3FA0;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#6B3FA0;font-weight:700;flex-shrink:0;
+}
+
+/* L2 메뉴 아이템 */
+.nav-items{overflow:hidden;transition:max-height 0.25s ease;}
+.nav-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px 8px 16px;font-size:12px;color:#444;
+  cursor:pointer;border-bottom:1px solid #f0eef8;
+  user-select:none;transition:background 0.1s;
+}
+.nav-item:hover{background:#f5f3fc;color:#6B3FA0}
+.nav-item.active{color:#6B3FA0;font-weight:600}
+.nav-item .nav-icon{
+  width:16px;height:16px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* L3 서브메뉴 */
+.nav-sub-items{overflow:hidden;}
+.nav-sub-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px 7px 30px;font-size:12px;color:#555;
+  cursor:pointer;border-bottom:1px solid #f5f3fb;
+  transition:background 0.1s;
+}
+.nav-sub-item:hover{background:#f5f3fc;color:#555}
+.nav-sub-item.active{
+  color:#C532F6;font-weight:600;background:#faf4ff;
+  border-left:3px solid #C532F6;padding-left:27px;
+}
+
+/* 할인쿠폰 드롭다운 서브메뉴 */
+.coupon-sub-items{overflow:hidden;background:#fff;}
+.coupon-sub-item{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px 7px 20px;font-size:12px;color:#444;
+  cursor:pointer;border-bottom:1px solid #f5f3fb;
+  transition:background 0.1s;
+}
+.coupon-sub-item::before{content:'·';color:#aaa;font-size:16px;line-height:1;flex-shrink:0}
+.coupon-sub-item:hover{color:#C532F6;background:#fdf8ff}
+.coupon-sub-item.active{color:#fff;font-weight:700;background:#C532F6;}
+.coupon-sub-item.active::before{color:#fff}
+
+/* ── 메인 콘텐츠 ── */
+.main{flex:1;overflow-y:auto;padding:16px;}
+
+/* ── 섹션 공통 ── */
+.section{background:#fff;border:1px solid #dddaf0;border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.section-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 16px;background:#fff;border-bottom:1px solid #dddaf0;
+}
+.section-title{font-size:13px;font-weight:600;color:#333;display:flex;align-items:center;gap:6px}
+.diamond{width:9px;height:9px;background:#7B4FC4;transform:rotate(45deg);border-radius:1px;flex-shrink:0}
+.collapse-btn{background:none;border:none;cursor:pointer;font-size:13px;color:#666;padding:2px 6px}
+
+.row{display:flex;align-items:center;padding:10px 20px;border-bottom:1px solid #e8e0f5;gap:12px;min-height:50px;background:#F6F0FF;}
+.row:last-child{border-bottom:none}
+.label{width:115px;min-width:115px;font-size:12px;color:#555;display:flex;align-items:center;gap:3px;line-height:1.4;}
+.req{color:#e03030;font-size:10px;margin-right:2px}
+.field{flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+.text-input{flex:1;height:30px;border:1px solid #ccc;border-radius:3px;padding:0 8px;font-size:12px;color:#333;background:#fff;min-width:200px;}
+.text-input:focus{outline:none;border-color:#8B5CF6}
+
+.seg-btn{height:30px;padding:0 16px;border-radius:3px;font-size:12px;cursor:pointer;border:1px solid #d0cce0;background:#fff;color:#333;transition:all 0.1s;white-space:nowrap;margin-right:2px;}
+.seg-btn:hover{border-color:#9B7FD4;color:#640FAF}
+/* 사용자가 선택한 상태 */
+.seg-btn.active{background:#640FAF;color:#fff;border-color:#640FAF;}
+.seg-btn.active:hover{background:#520d90}
+/* 상위 조건에 의해 강제 선택된 상태 */
+.seg-btn.forced{background:#EBDDF9;color:#640FAF;border-color:#c9aff0;cursor:default;}
+/* 선택 불가(비활성) 상태 */
+.seg-btn.dim{background:#F1EFEF;color:#bbb;border-color:#d8d4e0;cursor:default;}
+.seg-btn.dim:hover{border-color:#d8d4e0;color:#bbb}
+
+.act-btn{height:28px;padding:0 12px;border-radius:3px;font-size:12px;cursor:pointer;border:1px solid #c8c4d8;background:#fff;color:#444;white-space:nowrap;transition:all 0.1s;}
+.act-btn:hover{background:#f5f3fc;border-color:#9B7FD4}
+.act-btn.dark{background:#333;color:#fff;border-color:#333;}
+.act-btn.dark:hover{background:#222;border-color:#222}
+
+.toggle{width:38px;height:20px;border-radius:10px;background:#bbb;position:relative;cursor:pointer;transition:background 0.2s;border:none;outline:none;flex-shrink:0;}
+.toggle.on{background:#640FAF}
+.toggle.on-forced{background:#c9aff0;cursor:default;}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:white;top:2px;left:2px;transition:transform 0.2s;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+.toggle.on::after,.toggle.on-forced::after{transform:translateX(18px)}
+.toggle-label{font-size:11px;color:#888;font-weight:500}
+.toggle-label.on{color:#640FAF;font-weight:600}
+.toggle-label.on-forced{color:#9B7FD4;font-weight:600}
+
+.warn{display:flex;align-items:center;gap:5px;font-size:11px;color:#cc2200;margin-left:4px;}
+.warn-icon{width:16px;height:16px;border:1.5px solid #cc2200;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#cc2200;font-weight:700;flex-shrink:0;}
+
+.date-input{height:30px;border:1px solid #ccc;border-radius:3px;padding:0 8px;font-size:12px;color:#333;background:#fff;width:148px;}
+.date-input:focus{outline:none;border-color:#8B5CF6}
+.num-input{height:30px;border:1px solid #ccc;border-radius:3px;padding:0 8px;font-size:12px;width:70px;color:#333;background:#fff;}
+.num-input:focus{outline:none;border-color:#8B5CF6}
+.unit{font-size:12px;color:#666}
+.help-btn{width:18px;height:18px;border-radius:50%;border:1px solid #ccc;background:#f9f8fd;font-size:10px;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.coupon-no{font-size:12px;color:#999}
+
+/* 팝업 오버레이 */
+#pgmPopupOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;}
+
+/* ── 편집 모드 ── */
+body.edit-mode .row{outline:1px dashed #c9aff0;outline-offset:-1px;}
+body.edit-mode .row:hover{outline:2px dashed #640FAF;}
+body.edit-mode [contenteditable]{
+  outline:none;border-bottom:1.5px dashed #640FAF;
+  cursor:text;min-width:20px;display:inline-block;
+}
+body.edit-mode [contenteditable]:focus{background:rgba(100,15,175,0.05);border-radius:2px;}
+.edit-toolbar{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:2000;
+  background:#2d1b4e;color:#fff;padding:6px 16px;
+  align-items:center;gap:8px;font-size:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+body.edit-mode .edit-toolbar{display:flex;}
+body.edit-mode .main{padding-top:46px;}
+.edit-toolbar button{
+  height:26px;padding:0 12px;border-radius:4px;font-size:11px;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);
+  color:#fff;transition:all 0.1s;white-space:nowrap;
+}
+.edit-toolbar button:hover{background:rgba(255,255,255,0.25);}
+.edit-toolbar button.danger{background:rgba(220,50,50,0.3);border-color:rgba(220,50,50,0.6);}
+.edit-toolbar button.danger:hover{background:rgba(220,50,50,0.5);}
+.edit-toolbar .sep{width:1px;height:20px;background:rgba(255,255,255,0.2);margin:0 4px;}
+.edit-toolbar .tip{color:rgba(255,255,255,0.5);font-size:11px;margin-left:auto;}
+/* row 편집 컨트롤 */
+body.edit-mode .row-controls{display:flex!important;}
+.row-controls{
+  display:none;flex-shrink:0;gap:4px;margin-left:auto;align-items:center;
+}
+.row-ctrl-btn{
+  width:20px;height:20px;border-radius:3px;border:1px solid #c9aff0;
+  background:#fff;color:#640FAF;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+}
+.row-ctrl-btn:hover{background:#640FAF;color:#fff;}
+.row-ctrl-btn.del{border-color:#e09090;color:#c04040;}
+.row-ctrl-btn.del:hover{background:#c04040;color:#fff;}
+/* 섹션 편집 컨트롤 */
+body.edit-mode .section{position:relative;}
+body.edit-mode .section-controls{display:flex!important;}
+.section-controls{
+  display:none;gap:4px;align-items:center;
+}
+.sec-ctrl-btn{
+  height:22px;padding:0 8px;border-radius:3px;border:1px solid rgba(255,255,255,0.4);
+  background:rgba(255,255,255,0.15);color:#fff;font-size:11px;cursor:pointer;
+}
+.sec-ctrl-btn:hover{background:rgba(255,255,255,0.35);}
+.sec-ctrl-btn.del{border-color:rgba(255,120,120,0.6);color:#ffaaaa;}
+.sec-ctrl-btn.del:hover{background:rgba(200,50,50,0.4);}
+/* 버튼 편집 */
+body.edit-mode .seg-btn{position:relative;}
+body.edit-mode .btn-del{display:flex!important;}
+.btn-del{
+  display:none;position:absolute;top:-6px;right:-6px;
+  width:14px;height:14px;border-radius:50%;background:#c04040;color:#fff;
+  font-size:9px;border:none;cursor:pointer;align-items:center;justify-content:center;
+  z-index:10;line-height:1;
+}
+/* 편집모드 토글 버튼 (항상 노출) */
+#editToggleBtn{
+  position:fixed;bottom:20px;right:20px;z-index:3000;
+  height:36px;padding:0 16px;border-radius:20px;
+  background:#640FAF;color:#fff;border:none;cursor:pointer;
+  font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(100,15,175,0.4);
+  transition:all 0.2s;
+}
+#editToggleBtn:hover{background:#520d90;}
+#editToggleBtn.on{background:#e03030;}
+#editToggleBtn.on:hover{background:#b02020;}
+</style>
+</head>
+<body class="edit-mode">
+
+<!-- ── 편집 툴바 ── -->
+<div class="edit-toolbar" id="editToolbar">
+  <span style="font-weight:600;color:#dda0ff">✏️ 편집 모드</span>
+  <div class="sep"></div>
+  <button onclick="addSection()">＋ 섹션 추가</button>
+  <button onclick="addRowBelow()">＋ 행 추가</button>
+  <button onclick="addSegBtn()">＋ 버튼 추가</button>
+  <button onclick="addTextSpan()">＋ 텍스트 추가</button>
+  <button onclick="addInputBox()">＋ 입력박스 추가</button>
+  <button onclick="addWarn()">＋ 유의사항 추가</button>
+  <div class="sep"></div>
+  <button onclick="saveHTML()" style="background:rgba(50,180,100,0.3);border-color:rgba(50,180,100,0.6)">💾 HTML 저장</button>
+  <span class="tip">라벨·버튼 텍스트 클릭 → 직접 수정 / 행·섹션 우측 컨트롤로 삭제</span>
+</div>
+
+<!-- ── 편집 모드 토글 버튼 ── -->
+<button id="editToggleBtn" onclick="toggleEditMode()" class="on">✕ 편집 종료</button>
+
+<!-- ══════════════ 좌측 사이드바 ══════════════ -->
+<div class="sidebar">
+  <div class="sidebar-top">
+    <select><option>프로모션</option></select>
+    <div style="display:flex;gap:6px;align-items:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+    </div>
+  </div>
+
+  <!-- L1: 프로모션 게시판 -->
+  <div class="nav-group-header" onclick="toggleNav('nav_board')">
+    <div class="caret" id="caret_board">－</div>
+    프로모션 게시판
+  </div>
+  <div class="nav-items" id="nav_board" style="max-height:0"></div>
+
+  <!-- L1: 프로모션 관리 -->
+  <div class="nav-group-header" onclick="toggleNav('nav_promo')">
+    <div class="caret" id="caret_promo">－</div>
+    프로모션 관리
+  </div>
+  <div class="nav-items" id="nav_promo" style="max-height: 543px;">
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>상품프로모션
+    </div>
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>캠페인프로모션
+    </div>
+    <!-- 할인쿠폰 아코디온 -->
+    <div class="nav-item active" id="nav_coupon_header" onclick="toggleCoupon()" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="nav-icon" style="font-size:13px">≡↑</span>할인쿠폰
+      </div>
+      <span id="coupon_caret" style="font-size:11px;color:#C532F6">▾</span>
+    </div>
+    <div id="nav_coupon_sub" class="coupon-sub-items" style="max-height: 248px;">
+      <div class="coupon-sub-item active" onclick="couponSubClick(this)">할인쿠폰 등록</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">상품코드별 할인쿠폰적용리스트</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">할인쿠폰 리스트</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">CJONE 쿠폰정산관리</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">할인쿠폰 대량등록</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">할인쿠폰 적용가능여부 조회</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">(구)할인쿠폰 리스트</div>
+      <div class="coupon-sub-item" onclick="couponSubClick(this)">할인쿠폰 미사용 고객 추출</div>
+    </div>
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>프로모션기준 및 예외관리
+    </div>
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>카드프로모션
+    </div>
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>프로모션 현황
+    </div>
+    <div class="nav-item" onclick="navClick(this)">
+      <span class="nav-icon" style="font-size:13px">≡↑</span>체험단
+    </div>
+    <!-- 멤버십 관리 (아코디온) -->
+    <div class="nav-item" id="nav_membership_header" onclick="toggleMembership()" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="nav-icon" style="font-size:13px">≡↑</span>멤버십 관리
+      </div>
+      <span id="membership_caret" style="font-size:11px;color:#999">▾</span>
+    </div>
+    <div id="nav_membership_sub" class="nav-sub-items" style="max-height: 31px;">
+      <div class="nav-sub-item" onclick="subNavClick(this)">멤버십 등록/조회</div>
+    </div>
+  </div>
+
+  <!-- L1: 이벤트 관리 -->
+  <div class="nav-group-header" onclick="toggleNav('nav_event')">
+    <div class="caret" id="caret_event">＋</div>
+    이벤트 관리
+  </div>
+  <div class="nav-items" id="nav_event" style="max-height:0"></div>
+</div>
+
+<!-- ══════════════ 메인 콘텐츠 ══════════════ -->
+<div class="main">
+
+<!-- 기본설정 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title"><div class="diamond"><div class="section-controls"><button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button><button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button><button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button></div></div><span class="title-text">기본설정</span><div class="help-btn" style="width:16px;height:16px;font-size:10px">?</div></div>
+    <button class="collapse-btn" onclick="collapseToggle(this,'sectionBody')">∧</button>
+  </div>
+  <div id="sectionBody">
+    <div class="row">
+      <div class="label">할인쿠폰번호
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field"><span class="coupon-no"></span></div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>할인쿠폰명
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <input class="text-input" type="text" placeholder="할인쿠폰 명을 입력해주세요. 할인쿠폰 명은 고객관점에서 작성하시기 바랍니다. ※ 예시) 2/1~2/7 설 식품 최대 10% 할인쿠폰">
+        <button class="act-btn">할인쿠폰명변경</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>사용여부
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="toggle" id="useToggle" onclick="toggleSwitch(this,'useLabel')"></button>
+        <span class="toggle-label" id="useLabel">OFF</span>
+        <button class="act-btn" style="margin-left:4px">사용현황</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>멀티사이트
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn active" onclick="segClick(this)">CJ온스타일</button>
+        <button class="seg-btn" onclick="segClick(this)">패션버티컬</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>발행구분
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn active" onclick="setIssueType(this)">일반발행</button>
+        <button class="seg-btn" onclick="setIssueType(this)">상품상세다운로드</button>
+        <button class="seg-btn" onclick="setIssueType(this)">OFFER쿠폰</button>
+        <div class="warn"><div class="warn-icon">!</div>상품상세다운로드와 OFFER쿠폰은 '비공개 쿠폰'으로 '고정' 등록됩니다.</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>쿠폰노출영역
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn dim" id="exp_private">비공개</button>
+        <button class="seg-btn active" id="exp_detail" onclick="exposeClick(this)">상품상세+주문서</button>
+        <button class="seg-btn" id="exp_order" onclick="exposeClick(this)">주문서</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>할인쿠폰종류
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn" id="ct_normal" onclick="couponTypeClick(this)">일반쿠폰</button>
+        <button class="seg-btn" id="ct_shop" onclick="couponTypeClick(this)">쇼핑플러스쿠폰</button>
+        <button class="seg-btn dim" id="ct_delivery">배송비쿠폰</button>
+        <button class="seg-btn dim" id="ct_cart" onclick="couponTypeClick(this)">장바구니쿠폰</button>
+        <div class="warn"><div class="warn-icon">!</div>장바구니쿠폰은 '상품상세다운로드' 또는 'OFFER쿠폰'인 경우 등록 가능합니다.</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>다운로드 및<br>사용기간
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <input class="date-input" type="date">
+        <span class="unit">~</span>
+        <input class="date-input" type="date">
+        <button class="act-btn">쿠폰종료일변경</button>
+        <div class="help-btn">?</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">쿠폰 유효일
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <input class="num-input" type="number" min="0">
+        <span class="unit">일</span>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#555;cursor:pointer;margin-left:4px">
+          <input type="checkbox" style="accent-color:#8B5CF6;width:13px;height:13px"> 월 유효기간 적용
+        </label>
+        <button class="toggle" onclick="toggleSwitch(this,null)" style="margin-left:4px"></button>
+        <div class="help-btn">?</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">반복여부 및<br>주기 설정
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+        <button class="act-btn" style="margin-left:6px">반복주기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 금액설정 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title"><div class="diamond"><div class="section-controls"><button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button><button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button><button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button></div></div><span class="title-text">금액설정</span><div class="help-btn" style="width:16px;height:16px;font-size:10px">?</div></div>
+    <button class="collapse-btn" onclick="collapseToggle(this,'amountBody')">∧</button>
+  </div>
+  <div id="amountBody">
+    <div class="row" style="align-items:flex-start;padding-top:14px;padding-bottom:14px">
+      <div class="label" style="padding-top:6px"><span class="req">●</span>할인방식
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <button class="seg-btn" id="btn_fixed" onclick="setDiscountType('fixed')">정액</button>
+          <button class="seg-btn active" id="btn_rate" onclick="setDiscountType('rate')">정율</button>
+          <div id="rate_maxprice" style="display:flex;align-items:center;gap:6px">
+            <input class="num-input" type="number" min="0" style="width:80px">
+            <span class="unit">% 최대판매가 적용</span>
+            <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+            <span class="toggle-label" style="margin-left:2px">OFF</span>
+          </div>
+          <div id="fixed_maxprice" style="display:none;align-items:center;gap:6px">
+            <input class="num-input" type="number" min="0" style="width:100px">
+            <span class="unit">원 최대판매가 적용</span>
+            <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+            <span class="toggle-label" style="margin-left:2px">OFF</span>
+          </div>
+        </div>
+        <div id="rate_condition" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="unit">최저상품마진율이</span>
+          <input class="num-input" type="number" min="0" style="width:80px">
+          <span class="unit">% 이상이고, 최저판매가가</span>
+          <input class="num-input" type="number" min="0" style="width:100px">
+          <span class="unit">원 이상일 때 적용되며, 최대할인금액은</span>
+          <input class="num-input" type="number" min="0" style="width:100px">
+          <span class="unit">원으로 제한 됩니다.</span>
+        </div>
+        <div id="fixed_condition" style="display:none;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="unit">최저상품마진율이</span>
+          <input class="num-input" type="number" min="0" style="width:80px">
+          <span class="unit">% 이상이고, 최저판매가가</span>
+          <input class="num-input" type="number" min="0" style="width:100px">
+          <span class="unit">원 이상일 때 적용됩니다.</span>
+        </div>
+      </div>
+    </div><div class="row">
+      <div class="label"><span class="req">●</span>장바구니 조건
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <span class="unit">적용상품 주문수량의 합계가</span>
+        <input type="number" class="num-input" placeholder="" style="width:100px;">
+        <span class="unit">개 이상이고, 주문금액 합계가</span>
+        <input type="number" class="num-input" placeholder="" style="width:100px;">
+        <span class="unit">원 이상으로 묶음 주문 시 사용 가능합니다.</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">역마진 제어여부
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,'marginLabel')"></button>
+        <span class="toggle-label" id="marginLabel">OFF</span>
+        <div class="warn" style="margin-left:6px"><div class="warn-icon">!</div>쿠폰 적용 시 공급가(vat포함)보다 낮아지면 사용 못 하게 하는 기능입니다.</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>비용부담
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn active" id="cost_dangs" onclick="setCostType('dangs')">당사</button>
+        <button class="seg-btn" id="cost_both" onclick="setCostType('both')">당사+협력사</button>
+        <button class="seg-btn dim" id="cost_coop">협력사</button>
+        <div id="cost_split" style="display:none;align-items:center;gap:6px">
+          <span class="unit">당사부담</span>
+          <input class="num-input" type="number" min="0" max="100" style="width:80px" oninput="syncCost(this,'coop_pct')">
+          <span class="unit" id="cost_unit1">%</span>
+          <span class="unit">협력사부담</span>
+          <input class="num-input" type="number" min="0" max="100" id="coop_pct" style="width:80px" readonly="">
+          <span class="unit" id="cost_unit2">%</span>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><span class="req">●</span>비용귀속부서
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <input class="num-input" type="text" value="98702" style="width:80px">
+        <button class="act-btn" style="width:26px;padding:0;display:flex;align-items:center;justify-content:center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        </button>
+        <span class="unit">IT전략팀</span>
+        <span class="unit" style="margin-left:4px">발행부서</span>
+        <input class="text-input" type="text" style="min-width:120px;flex:none;width:160px">
+        <button class="act-btn" style="width:26px;padding:0;display:flex;align-items:center;justify-content:center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 추가설정 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title"><div class="diamond"><div class="section-controls"><button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button><button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button><button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button></div></div><span class="title-text">추가설정</span><div class="help-btn" style="width:16px;height:16px;font-size:10px">?</div></div>
+    <button class="collapse-btn" onclick="collapseToggle(this,'extraBody')">∧</button>
+  </div>
+  <div id="extraBody">
+    <div class="row">
+      <div class="label">다수량쿠폰여부
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <button class="toggle on-forced"></button>
+        <span class="toggle-label on-forced">ON</span>
+        <div class="warn" style="margin-left:6px"><div class="warn-icon">!</div>주문 수량이 2개 이상인 경우, 할인쿠폰을 적용할 지에 대한 여부</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">선착순
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+        <span class="toggle-label">OFF</span>
+        <input class="num-input" type="number" min="0" style="width:120px;margin-left:6px">
+        <div class="help-btn">?</div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="label"><span class="req">●</span>쿠폰분류
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <select style="height:30px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 8px;background:#fff;min-width:160px">
+          <option>마케팅쿠폰(고객관계관리)</option>
+          <option>상품쿠폰</option>
+          <option>기타쿠폰</option>
+        </select>
+        <button class="toggle" onclick="toggleSwitch(this,null)" style="margin-left:8px"></button>
+        <span class="toggle-label" style="margin-left:4px">OFF</span>
+        <span class="unit" style="margin-left:4px">보상여부</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">CRM전용오퍼여부
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+        <span class="toggle-label">OFF</span>
+        <span class="unit" style="margin-left:8px">CRM예상부여고객수(명)</span>
+        <input class="num-input" type="number" min="0" style="width:100px">
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">APP전용여부<br>(E마케팅전용)
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+        <span class="toggle-label">OFF</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">바로방문 전용여부
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+      <div class="field">
+        <button class="toggle" onclick="toggleSwitch(this,null)"></button>
+        <span class="toggle-label">OFF</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 적용 대상 설정 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title"><div class="diamond"><div class="section-controls"><button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button><button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button><button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button></div></div><span class="title-text">적용 대상 설정</span><div class="help-btn" style="width:16px;height:16px;font-size:10px">?</div></div>
+    <button class="collapse-btn" onclick="collapseToggle(this,'applyBody')">∧</button>
+  </div>
+  <div id="applyBody">
+    <div class="row">
+      <div class="label"><span class="req">●</span>상품적용기준
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn" onclick="segClick(this)">전체</button>
+        <button class="seg-btn active" onclick="segClick(this)">단일조건</button>
+        <button class="seg-btn" onclick="segClick(this)" style="white-space:pre-line;height:36px;line-height:1.3">OR조건
+(합집합)</button>
+        <button class="seg-btn" onclick="segClick(this)" style="white-space:pre-line;height:36px;line-height:1.3">AND조건
+(교집합)</button>
+      </div>
+    </div>
+    <div class="row" style="align-items:flex-start;padding-top:10px;padding-bottom:0;border-bottom:none">
+      <div class="label" style="padding-top:6px"><span class="req">●</span>적용대상
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field" style="flex-direction:column;align-items:flex-start;gap:0">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding-bottom:10px">
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">상품코드</button>
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">브랜드/세그먼트코드</button>
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">협력사코드</button>
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">MD코드</button>
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">기획전코드</button>
+          <button class="seg-btn" onclick="applyTargetClick(this,'apply')">PGM코드</button>
+        </div>
+        <div id="pgm_apply_area" style="display:none;width:100%;border-top:1px solid #e8e4f4;padding:10px 0 12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:#444">◆ PGM코드</span>
+            <span style="font-size:12px;color:#888">/ 총 <span id="pgm_apply_count">0</span>건</span>
+            <span style="font-size:12px;color:#888">◦ 검색</span>
+            <input class="num-input" type="text" placeholder="PGM코드" style="width:140px" oninput="filterPgm('apply',this.value)">
+            <button class="act-btn" style="display:flex;align-items:center;gap:3px">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            </button>
+            <button class="act-btn" onclick="filterPgm('apply','')">필터해제</button>
+            <div style="margin-left:auto;display:flex;gap:4px">
+              <button class="act-btn dark" onclick="openPgmPopup('apply')">+ PGM코드 추가</button>
+              <button class="act-btn dark">+ 대상 일괄추가</button>
+              <button class="act-btn" onclick="deleteSelected('apply')">－ 행삭제</button>
+              <button class="act-btn" style="padding:0 8px">✕</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table id="pgm_apply_table" style="width:100%;border-collapse:collapse;font-size:11px;min-width:900px">
+              <thead>
+                <tr style="background:#f7f5fc;border-top:1px solid #dddaf0;border-bottom:1px solid #dddaf0">
+                  <th style="padding:7px 6px;text-align:center;width:36px;border-right:1px solid #ece8f8">No</th>
+                  <th style="padding:7px 6px;text-align:center;width:30px;border-right:1px solid #ece8f8"><input type="checkbox" id="chk_apply_all" onchange="toggleAllCheck('apply',this)"></th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">방송일자</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">시작시간</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">PGM코드</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">프로그램명</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">채널코드</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">편성구분코드</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">편성구분코드명</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">프로모션 시작일</th>
+                  <th style="padding:7px 8px;border-right:1px solid #ece8f8">프로모션 종료일</th>
+                  <th style="padding:7px 8px">등록자</th>
+                </tr>
+              </thead>
+              <tbody id="pgm_apply_tbody">
+                <tr id="pgm_apply_empty"><td colspan="12" style="text-align:center;padding:18px;color:#aaa;font-size:12px">조회 결과가 존재하지 않습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 제외 대상 설정 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title"><div class="diamond"><div class="section-controls"><button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button><button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button><button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button></div></div><span class="title-text">제외 대상 설정</span><div class="help-btn" style="width:16px;height:16px;font-size:10px">?</div></div>
+    <button class="collapse-btn" onclick="collapseToggle(this,'excludeBody')">∧</button>
+  </div>
+  <div id="excludeBody">
+    <div class="row">
+      <div class="label">상품제외기준
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn active" onclick="segClick(this)">대상없음</button>
+        <button class="seg-btn" onclick="segClick(this)">단일조건</button>
+        <button class="seg-btn" onclick="segClick(this)" style="white-space:pre-line;height:36px;line-height:1.3">OR조건
+(합집합)</button>
+        <button class="seg-btn" onclick="segClick(this)" style="white-space:pre-line;height:36px;line-height:1.3">AND조건
+(교집합)</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">제외대상
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)" title="위로">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)" title="아래로">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)" title="행 삭제">✕</button></div>
+    </div>
+      <div class="field">
+        <button class="seg-btn dim">상품코드</button>
+        <button class="seg-btn dim">브랜드/세그먼트코드</button>
+        <button class="seg-btn dim">협력사코드</button>
+        <button class="seg-btn dim">MD코드</button>
+        <button class="seg-btn dim">기획전코드</button>
+        <button class="seg-btn dim">방송일자(주력)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══════════════ PGM 조회 팝업 ══════════════ -->
+<div id="pgmPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:6px;width:940px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="background:#5a3490;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <span style="font-size:14px;font-weight:600">방송프로그램조회팝업</span>
+      <button onclick="closePgmPopup()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:12px 16px;border-bottom:1px solid #e8e4f4;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;background:#fff">
+      <label style="font-size:12px;color:#555">채널선택</label>
+      <select style="height:28px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 6px;min-width:80px">
+        <option>전체</option><option>MLC</option><option>LIVE</option><option>PLUS(CABLE)</option><option>PLUS(IPTV)</option>
+      </select>
+      <label style="font-size:12px;color:#555">방송일자</label>
+      <input type="date" value="2026-06-15" style="height:28px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 6px">
+      <span style="font-size:12px">~</span>
+      <input type="date" value="2026-06-16" style="height:28px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 6px">
+      <label style="font-size:12px;color:#555">프로그램 코드/명</label>
+      <input type="text" style="height:28px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 6px;width:120px">
+      <input type="text" style="height:28px;border:1px solid #ccc;border-radius:3px;font-size:12px;padding:0 6px;width:120px">
+      <button class="act-btn dark" style="padding:0 18px">조회 🔍</button>
+    </div>
+    <div style="padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e4f4;flex-shrink:0;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:600;color:#444">◆ 방송프로그램코드 목록</span>
+      <span style="font-size:12px;color:#888">/ 총 <span id="popup_total">144</span>건</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+        <label style="font-size:12px;color:#555">진행기간</label>
+        <input type="datetime-local" value="2026-06-16T00:00" style="height:26px;border:1px solid #ccc;border-radius:3px;font-size:11px;padding:0 4px">
+        <span style="font-size:12px">~</span>
+        <input type="datetime-local" value="2026-06-16T23:59" style="height:26px;border:1px solid #ccc;border-radius:3px;font-size:11px;padding:0 4px">
+        <button class="act-btn" style="height:26px;font-size:11px">적용</button>
+      </div>
+    </div>
+    <div style="overflow:auto;flex:1">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead style="position:sticky;top:0;background:#f7f5fc;z-index:1">
+          <tr style="border-bottom:1px solid #dddaf0">
+            <th style="padding:7px 6px;text-align:center;width:32px;border-right:1px solid #ece8f8">No</th>
+            <th style="padding:7px 6px;text-align:center;width:28px;border-right:1px solid #ece8f8"><input type="checkbox" id="popup_chk_all" onchange="popupToggleAll(this)"></th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8">방송일자</th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8">시작시간</th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8">프로그램코드</th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8;min-width:140px">프로그램명</th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8">편성구분코드명</th>
+            <th style="padding:7px 8px;border-right:1px solid #ece8f8;min-width:130px">프로모션 시작일</th>
+            <th style="padding:7px 8px;min-width:130px">프로모션 종료일</th>
+          </tr>
+        </thead>
+        <tbody id="popup_tbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid #e8e4f4;display:flex;justify-content:center;gap:8px;flex-shrink:0">
+      <button class="act-btn" onclick="closePgmPopup()" style="width:80px">닫기</button>
+      <button class="act-btn dark" onclick="savePopupSelection()" style="width:80px">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 사이드바 ──
+function toggleNav(id) {
+  const el = document.getElementById(id);
+  const caretId = 'caret_' + id.replace('nav_','');
+  const caret = document.getElementById(caretId);
+  const isOpen = el.style.maxHeight !== '0px' && el.style.maxHeight !== '0';
+  el.style.maxHeight = isOpen ? '0' : el.scrollHeight + 'px';
+  if(caret) caret.textContent = isOpen ? '＋' : '－';
+}
+
+function toggleMembership() {
+  const sub = document.getElementById('nav_membership_sub');
+  const caret = document.getElementById('membership_caret');
+  const isOpen = sub.style.maxHeight && sub.style.maxHeight !== '0px';
+  sub.style.maxHeight = isOpen ? '0' : sub.scrollHeight + 'px';
+  caret.textContent = isOpen ? '▸' : '▾';
+}
+
+function navClick(item) {
+  // 현재 페이지(할인쿠폰)만 active 상태 유지 — 다른 항목 클릭해도 반응 없음
+}
+
+function toggleCoupon() {
+  const sub = document.getElementById('nav_coupon_sub');
+  const caret = document.getElementById('coupon_caret');
+  const isOpen = sub.style.maxHeight && sub.style.maxHeight !== '0px';
+  sub.style.maxHeight = isOpen ? '0' : sub.scrollHeight + 'px';
+  caret.textContent = isOpen ? '▸' : '▾';
+}
+
+function couponSubClick(item) {
+  document.querySelectorAll('.coupon-sub-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+}
+
+function subNavClick(item) {
+  document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+}
+
+// 초기: 멤버십 관리 서브메뉴 열린 상태
+window.addEventListener('DOMContentLoaded', () => {
+  const sub = document.getElementById('nav_membership_sub');
+  sub.style.maxHeight = sub.scrollHeight + 'px';
+  // 프로모션 관리 그룹 열린 상태
+  const promo = document.getElementById('nav_promo');
+  promo.style.maxHeight = promo.scrollHeight + 'px';
+  // 할인쿠폰 서브메뉴 열린 상태
+  const couponSub = document.getElementById('nav_coupon_sub');
+  couponSub.style.maxHeight = couponSub.scrollHeight + 'px';
+});
+
+// ── 공통 ──
+function collapseToggle(btn, bodyId) {
+  const body = document.getElementById(bodyId);
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? '∧' : '∨';
+}
+
+function segClick(btn) {
+  const siblings = btn.parentElement.querySelectorAll('.seg-btn:not(.dim)');
+  siblings.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setIssueType(btn) {
+  btn.closest('.field').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const type = btn.textContent.trim();
+
+  const expPrivate = document.getElementById('exp_private');
+  const expDetail  = document.getElementById('exp_detail');
+  const expOrder   = document.getElementById('exp_order');
+  const ctNormal   = document.getElementById('ct_normal');
+  const ctShop     = document.getElementById('ct_shop');
+  const ctDelivery = document.getElementById('ct_delivery');
+  const ctCart     = document.getElementById('ct_cart');
+
+  function setExp(el, state) {
+    el.className = 'seg-btn';
+    if (state === '선택')   el.classList.add('active');
+    if (state === '강제')   el.classList.add('forced');
+    if (state === '비활성') el.classList.add('dim');
+    el.onclick = (state === '기본' || state === '선택') ? function(){ exposeClick(this); } : null;
+  }
+
+  function setCT(el, state, show) {
+    el.style.display = show ? '' : 'none';
+    if (!show) return;
+    el.className = 'seg-btn';
+    if (state === '선택')   el.classList.add('active');
+    if (state === '강제')   el.classList.add('forced');
+    if (state === '비활성') el.classList.add('dim');
+    el.onclick = (state === '기본' || state === '선택') ? function(){ couponTypeClick(this); } : null;
+  }
+
+  if (type === '일반발행') {
+    setExp(expPrivate, '비활성');
+    setExp(expDetail,  '선택');
+    setExp(expOrder,   '기본');
+    setCT(ctNormal,   '선택',   true);
+    setCT(ctShop,     '기본',   true);
+    setCT(ctDelivery, '비활성', true);
+    setCT(ctCart,     '비활성', true);
+
+  } else if (type === '상품상세다운로드') {
+    setExp(expPrivate, '강제');
+    setExp(expDetail,  '비활성');
+    setExp(expOrder,   '비활성');
+    setCT(ctNormal,   '선택',   true);
+    setCT(ctShop,     '기본',   true);
+    setCT(ctDelivery, '비활성', true);
+    setCT(ctCart,     '기본',   true);
+
+  } else if (type === 'OFFER쿠폰') {
+    setExp(expPrivate, '강제');
+    setExp(expDetail,  '비활성');
+    setExp(expOrder,   '비활성');
+    setCT(ctNormal,   '선택', true);
+    setCT(ctShop,     '기본', true);
+    setCT(ctDelivery, '기본', true);
+    setCT(ctCart,     '기본', true);
+  }
+}
+
+function exposeClick(btn) {
+  const btns = [document.getElementById('exp_detail'), document.getElementById('exp_order')];
+  btns.forEach(b => { if(b && !b.classList.contains('dim') && !b.classList.contains('forced')) b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function couponTypeClick(btn) {
+  const ids = ['ct_normal','ct_shop','ct_delivery','ct_cart'];
+  ids.forEach(id => {
+    const b = document.getElementById(id);
+    if(b && !b.classList.contains('dim') && !b.classList.contains('forced')) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+}
+
+function toggleSwitch(btn, labelId) {
+  if (btn.classList.contains('on-forced')) return; // 강제 고정 토글은 동작 안함
+  btn.classList.toggle('on');
+  const isOn = btn.classList.contains('on');
+  // 인접한 toggle-label 자동 탐지 (labelId 없어도 동작)
+  const label = labelId
+    ? document.getElementById(labelId)
+    : btn.nextElementSibling?.classList.contains('toggle-label') ? btn.nextElementSibling : null;
+  if (label) {
+    label.textContent = isOn ? 'ON' : 'OFF';
+    label.className = 'toggle-label' + (isOn ? ' on' : '');
+  }
+}
+
+function setDiscountType(type) {
+  const isRate = type === 'rate';
+  document.getElementById('btn_fixed').classList.toggle('active', !isRate);
+  document.getElementById('btn_rate').classList.toggle('active', isRate);
+  document.getElementById('rate_maxprice').style.display   = isRate ? 'flex' : 'none';
+  document.getElementById('fixed_maxprice').style.display  = isRate ? 'none' : 'flex';
+  document.getElementById('rate_condition').style.display  = isRate ? 'flex' : 'none';
+  document.getElementById('fixed_condition').style.display = isRate ? 'none' : 'flex';
+  const unit = isRate ? '%' : '원';
+  document.getElementById('cost_unit1').textContent = unit;
+  document.getElementById('cost_unit2').textContent = unit;
+}
+
+function setCostType(type) {
+  ['dangs','both'].forEach(id => document.getElementById('cost_'+id).classList.remove('active'));
+  if(type !== 'coop') document.getElementById('cost_'+type).classList.add('active');
+  document.getElementById('cost_split').style.display = type === 'both' ? 'flex' : 'none';
+}
+
+function syncCost(input, targetId) {
+  const v = Math.min(100, Math.max(0, Number(input.value)||0));
+  input.value = v;
+  document.getElementById(targetId).value = 100 - v;
+}
+
+// ── PGM 적용대상 ──
+function applyTargetClick(btn, scope) {
+  const isPgm = btn.textContent.trim() === 'PGM코드';
+  const siblings = btn.parentElement.querySelectorAll('.seg-btn');
+  siblings.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const area = document.getElementById('pgm_apply_area');
+  if(area) area.style.display = isPgm ? 'block' : 'none';
+}
+
+// ── PGM 팝업 ──
+const PGM_SAMPLE = [
+  {date:'2026-06-15',time:'2026-06-15 23:00:00',code:'26145',name:'스타일 나레이션',channel:'MLC',typeCode:'MLC',typeName:'MLC',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-15',time:'2026-06-15 23:45:00',code:'563729',name:'T탑쇼 1부',channel:'PLUS(CABLE)',typeCode:'PLUS(CABLE)',typeName:'PLUS(CABLE)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-15',time:'2026-06-15 23:45:00',code:'563729',name:'T탑쇼 1부',channel:'PLUS(IPTV)',typeCode:'PLUS(IPTV)',typeName:'PLUS(IPTV)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-15',time:'2026-06-15 23:55:00',code:'561176',name:'이미용품 2부',channel:'LIVE',typeCode:'LIVE',typeName:'LIVE',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 00:45:00',code:'562974',name:'T Weekly Best 4부',channel:'PLUS(IPTV)',typeCode:'PLUS(IPTV)',typeName:'PLUS(IPTV)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 00:45:00',code:'562974',name:'T Weekly Best 4부',channel:'PLUS(CABLE)',typeCode:'PLUS(CABLE)',typeName:'PLUS(CABLE)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:00:00',code:'562430',name:'1촌1명품/1사1명품',channel:'LIVE',typeCode:'LIVE',typeName:'LIVE',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:30:00',code:'563595',name:'심야재방 베스트 1부',channel:'LIVE',typeCode:'LIVE',typeName:'LIVE',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:45:00',code:'563262',name:'T심야재방 1부',channel:'PLUS(IPTV)',typeCode:'PLUS(IPTV)',typeName:'PLUS(IPTV)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:45:00',code:'563262',name:'T심야재방 1부',channel:'PLUS(CABLE)',typeCode:'PLUS(CABLE)',typeName:'PLUS(CABLE)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:55:00',code:'563252',name:'T심야재방 2부',channel:'PLUS(IPTV)',typeCode:'PLUS(IPTV)',typeName:'PLUS(IPTV)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 01:55:00',code:'563252',name:'T심야재방 2부',channel:'PLUS(CABLE)',typeCode:'PLUS(CABLE)',typeName:'PLUS(CABLE)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+  {date:'2026-06-16',time:'2026-06-16 02:05:00',code:'563253',name:'T심야재방 3부',channel:'PLUS(IPTV)',typeCode:'PLUS(IPTV)',typeName:'PLUS(IPTV)',promoStart:'2026-06-16 00:00',promoEnd:'2026-06-16 23:59'},
+];
+
+let currentPopupTarget = 'apply';
+const pgmRows = {apply:[]};
+
+function openPgmPopup(target) {
+  currentPopupTarget = target;
+  renderPopupTable(PGM_SAMPLE);
+  document.getElementById('pgmPopupOverlay').style.display = 'flex';
+}
+
+function closePgmPopup() {
+  document.getElementById('pgmPopupOverlay').style.display = 'none';
+  document.getElementById('popup_chk_all').checked = false;
+}
+
+function renderPopupTable(data) {
+  const tbody = document.getElementById('popup_tbody');
+  document.getElementById('popup_total').textContent = data.length;
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa">조회 결과가 존재하지 않습니다.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((r,i) => `
+    <tr style="border-bottom:1px solid #f0eef8;${i%2===1?'background:#fff':''}">
+      <td style="text-align:center;padding:6px">${i+1}</td>
+      <td style="text-align:center;padding:6px"><input type="checkbox" class="popup_row_chk" data-idx="${i}"></td>
+      <td style="padding:6px 8px">${r.date}</td>
+      <td style="padding:6px 8px">${r.time}</td>
+      <td style="padding:6px 8px">${r.code}</td>
+      <td style="padding:6px 8px">${r.name}</td>
+      <td style="padding:6px 8px">${r.typeName}</td>
+      <td style="padding:6px 8px">${r.promoStart}</td>
+      <td style="padding:6px 8px">${r.promoEnd}</td>
+    </tr>`).join('');
+}
+
+function popupToggleAll(chk) {
+  document.querySelectorAll('.popup_row_chk').forEach(c => c.checked = chk.checked);
+}
+
+function savePopupSelection() {
+  const checked = [...document.querySelectorAll('.popup_row_chk')].filter(c => c.checked);
+  if (!checked.length) { alert('선택된 항목이 없습니다.'); return; }
+  checked.forEach(c => {
+    const row = PGM_SAMPLE[parseInt(c.dataset.idx)];
+    const dup = pgmRows[currentPopupTarget].some(r => r.code===row.code && r.time===row.time);
+    if (!dup) pgmRows[currentPopupTarget].push({...row});
+  });
+  renderGrid(currentPopupTarget);
+  closePgmPopup();
+}
+
+function renderGrid(scope) {
+  const rows = pgmRows[scope];
+  document.getElementById('pgm_'+scope+'_count').textContent = rows.length;
+  const tbody = document.getElementById('pgm_'+scope+'_tbody');
+  const emptyRow = document.getElementById('pgm_'+scope+'_empty');
+  if(emptyRow) emptyRow.style.display = rows.length ? 'none' : '';
+  tbody.querySelectorAll('.data-row').forEach(r => r.remove());
+  rows.forEach((r,i) => {
+    const tr = document.createElement('tr');
+    tr.className = 'data-row';
+    tr.style.cssText = 'border-bottom:1px solid #f0eef8;' + (i%2===1?'background:#fff':'');
+    tr.innerHTML = `
+      <td style="text-align:center;padding:6px 4px">${i+1}</td>
+      <td style="text-align:center;padding:6px 4px"><input type="checkbox" class="grid_chk_${scope}"></td>
+      <td style="padding:6px 8px">${r.date}</td>
+      <td style="padding:6px 8px">${r.time}</td>
+      <td style="padding:6px 8px">${r.code}</td>
+      <td style="padding:6px 8px">${r.name}</td>
+      <td style="padding:6px 8px">${r.channel}</td>
+      <td style="padding:6px 8px">${r.typeCode}</td>
+      <td style="padding:6px 8px">${r.typeName}</td>
+      <td style="padding:6px 8px">${r.promoStart}</td>
+      <td style="padding:6px 8px">${r.promoEnd}</td>
+      <td style="padding:6px 8px">-</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleAllCheck(scope, chk) {
+  document.querySelectorAll('.grid_chk_'+scope).forEach(c => c.checked = chk.checked);
+}
+
+function deleteSelected(scope) {
+  const idxs = [...document.querySelectorAll('.grid_chk_'+scope)].map((c,i)=>c.checked?i:-1).filter(i=>i>=0).reverse();
+  idxs.forEach(i => pgmRows[scope].splice(i,1));
+  renderGrid(scope);
+}
+
+function filterPgm(scope, val) {
+  const filtered = val ? pgmRows[scope].filter(r=>r.code.includes(val)||r.name.includes(val)) : pgmRows[scope];
+  document.getElementById('pgm_'+scope+'_count').textContent = filtered.length;
+}
+
+// ══════════════════════════════
+// 편집 모드
+// ══════════════════════════════
+let editMode = true;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const btn = document.getElementById('editToggleBtn');
+  btn.textContent = editMode ? '✕ 편집 종료' : '✏️ 편집 모드';
+  btn.classList.toggle('on', editMode);
+
+  // 편집 모드 ON: 라벨, 섹션 타이틀, 버튼 텍스트를 contenteditable로
+  toggleContentEditable(editMode);
+}
+
+function toggleContentEditable(on) {
+  // 라벨
+  document.querySelectorAll('.label').forEach(el => {
+    el.contentEditable = on ? 'true' : 'false';
+  });
+  // 섹션 타이틀 텍스트 (diamond 다음 텍스트노드 감싸기)
+  document.querySelectorAll('.section-title').forEach(el => {
+    let span = el.querySelector('.title-text');
+    if (!span) {
+      // 텍스트 노드 찾기
+      [...el.childNodes].forEach(n => {
+        if (n.nodeType === 3 && n.textContent.trim()) {
+          span = document.createElement('span');
+          span.className = 'title-text';
+          span.textContent = n.textContent;
+          el.replaceChild(span, n);
+        }
+      });
+    }
+    if (span) span.contentEditable = on ? 'true' : 'false';
+  });
+  // 버튼 텍스트 (seg-btn, act-btn)
+  document.querySelectorAll('.seg-btn, .act-btn').forEach(el => {
+    el.contentEditable = on ? 'true' : 'false';
+    // 버튼 삭제 x 추가
+    if (on && !el.querySelector('.btn-del')) {
+      const x = document.createElement('button');
+      x.className = 'btn-del';
+      x.textContent = '✕';
+      x.onclick = function(e){ e.stopPropagation(); el.remove(); };
+      el.appendChild(x);
+    }
+    if (!on) el.querySelectorAll('.btn-del').forEach(x => x.remove());
+  });
+  // unit, warn 텍스트
+  document.querySelectorAll('.unit, .toggle-label, .coupon-no').forEach(el => {
+    el.contentEditable = on ? 'true' : 'false';
+  });
+}
+
+// 행 추가 — 마지막 클릭한 행 아래에 삽입
+function addRowBelow() {
+  const makeRow = () => {
+    const r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML = `
+      <div class="label" contenteditable="true">새 라벨</div>
+      <div class="field"><span class="unit" contenteditable="true">내용을 입력하세요</span></div>
+      <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>`;
+    return r;
+  };
+  if (window._lastRow) {
+    window._lastRow.insertAdjacentElement('afterend', makeRow());
+  } else {
+    // 클릭된 행 없으면 마지막 섹션 body 끝에 추가
+    const sections = document.querySelectorAll('.section');
+    if (!sections.length) return;
+    const lastSec = window._lastSection || sections[sections.length-1];
+    const body = lastSec.querySelector(':scope > div:last-child') || lastSec;
+    body.appendChild(makeRow());
+  }
+}
+
+// 텍스트 스팬 추가 — 마지막 클릭 위치(field) 다음에 삽입
+function addTextSpan() {
+  const span = document.createElement('span');
+  span.className = 'unit';
+  span.contentEditable = 'true';
+  span.textContent = '텍스트';
+  span.style.cssText = 'border-bottom:1.5px dashed #640FAF;min-width:40px;display:inline-block;';
+  insertAfterLastTarget(span);
+}
+
+// 입력박스 추가
+function addInputBox() {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'text-input';
+  input.placeholder = '입력';
+  input.style.cssText = 'flex:none;width:160px;';
+  insertAfterLastTarget(input);
+}
+
+// 유의사항 추가
+function addWarn() {
+  const wrap = document.createElement('div');
+  wrap.className = 'warn';
+  wrap.innerHTML = `<div class="warn-icon" contenteditable="false">!</div><span contenteditable="true" style="color:#cc2200">유의사항을 입력하세요</span>`;
+  insertAfterLastTarget(wrap);
+}
+
+// 공통: 마지막 클릭된 요소(span, input, btn 등) 다음에 삽입, 없으면 field 끝에
+function insertAfterLastTarget(el) {
+  if (window._lastInlineTarget && window._lastInlineTarget.parentElement) {
+    window._lastInlineTarget.insertAdjacentElement('afterend', el);
+  } else if (document._lastField) {
+    document._lastField.appendChild(el);
+  } else {
+    const field = document.querySelector('.field');
+    if (field) field.appendChild(el);
+  }
+}
+
+// 행 삭제
+function deleteRow(btn) {
+  if (!confirm('이 행을 삭제할까요?')) return;
+  btn.closest('.row').remove();
+}
+
+// 행 이동
+function moveRow(btn, dir) {
+  const row = btn.closest('.row');
+  const parent = row.parentElement;
+  const rows = [...parent.querySelectorAll(':scope > .row')];
+  const idx = rows.indexOf(row);
+  if (dir === -1 && idx > 0) parent.insertBefore(row, rows[idx-1]);
+  if (dir === 1 && idx < rows.length-1) parent.insertBefore(rows[idx+1], row);
+}
+
+// 섹션 추가
+function addSection() {
+  const id = 'newSection_' + Date.now();
+  const bodyId = 'body_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'section';
+  div.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">
+        <div class="diamond"></div>
+        <span class="title-text" contenteditable="true">새 섹션</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="section-controls" style="display:flex">
+          <button class="sec-ctrl-btn" onclick="moveSection(this,-1)">↑</button>
+          <button class="sec-ctrl-btn" onclick="moveSection(this,1)">↓</button>
+          <button class="sec-ctrl-btn del" onclick="deleteSection(this)">섹션 삭제</button>
+        </div>
+        <button class="collapse-btn" onclick="collapseToggle(this,'${bodyId}')">∧</button>
+      </div>
+    </div>
+    <div id="${bodyId}">
+      <div class="row">
+        <div class="label" contenteditable="true">라벨</div>
+        <div class="field"><span class="unit" contenteditable="true">내용</span></div>
+        <div class="row-controls"><button class="row-ctrl-btn" onclick="moveRow(this,-1)">↑</button><button class="row-ctrl-btn" onclick="moveRow(this,1)">↓</button><button class="row-ctrl-btn del" onclick="deleteRow(this)">✕</button></div>
+      </div>
+    </div>`;
+  document.querySelector('.main').appendChild(div);
+}
+
+// 섹션 삭제
+function deleteSection(btn) {
+  if (!confirm('이 섹션을 삭제할까요?')) return;
+  btn.closest('.section').remove();
+}
+
+// 섹션 이동
+function moveSection(btn, dir) {
+  const sec = btn.closest('.section');
+  const main = sec.parentElement;
+  const secs = [...main.querySelectorAll(':scope > .section')];
+  const idx = secs.indexOf(sec);
+  if (dir === -1 && idx > 0) main.insertBefore(sec, secs[idx-1]);
+  if (dir === 1 && idx < secs.length-1) main.insertBefore(secs[idx+1], sec);
+}
+
+// 버튼 추가
+function addSegBtn() {
+  // 현재 포커스된 field 또는 첫 번째 field
+  const field = document._lastField || document.querySelector('.field');
+  if (!field) return;
+  const btn = document.createElement('button');
+  btn.className = 'seg-btn';
+  btn.textContent = '새 버튼';
+  btn.contentEditable = 'true';
+  btn.onclick = function(){ segClick(this); };
+  const x = document.createElement('button');
+  x.className = 'btn-del';
+  x.textContent = '✕';
+  x.onclick = function(e){ e.stopPropagation(); btn.remove(); };
+  btn.appendChild(x);
+  field.appendChild(btn);
+}
+
+// 클릭 추적 (field, section, row, inline target)
+document.addEventListener('click', e => {
+  const field = e.target.closest('.field');
+  if (field) document._lastField = field;
+  const sec = e.target.closest('.section');
+  if (sec) window._lastSection = sec;
+  const row = e.target.closest('.row');
+  if (row) window._lastRow = row;
+  // inline 클릭 타겟 (span, input, button 등 field 내 직계 자식)
+  if (field) {
+    const children = [...field.children];
+    const clicked = children.find(c => c === e.target || c.contains(e.target));
+    if (clicked && !clicked.classList.contains('row-controls')) {
+      window._lastInlineTarget = clicked;
+    }
+  }
+});
+
+// HTML 저장 (다운로드)
+function saveHTML() {
+  // contenteditable 제거 후 저장
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+  clone.querySelectorAll('.btn-del').forEach(el => el.remove());
+  const blob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'coupon_edited.html';
+  a.click();
+}
+
+</script>
+
+
+</body></html>
