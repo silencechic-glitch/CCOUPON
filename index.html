@@ -2688,12 +2688,13 @@ body[data-not-sent] > #vis-container ~ #not-sent {
         <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
       </marker>
     </defs>
-  </svg><div id="vis-container"><h2 class="sr-only">주차별 적립 이벤트 통합 신청 모듈: 누적 예상 적립금, 주차 탭, 주차 신청 버튼, 고정 너비 스와이프 카드, 상세 팝업</h2>
+  </svg><div id="vis-container"><h2 class="sr-only">주차별 적립 이벤트 통합 신청 모듈: 누적 예상 적립금, 주차 탭, 주차 신청 버튼, 고정 너비 스와이프 카드, 상세 팝업, 샘플 시점 이동</h2>
 <style>
 .wk{flex:1;min-width:0;text-align:left;padding:10px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-2);cursor:pointer;font-size:13px;color:var(--text-secondary)}
 .wk.on{border:2px solid var(--border-accent);padding:9px 11px}
-.wk.dis{background:var(--surface-1);color:var(--text-muted);cursor:not-allowed;border-style:dashed}
-.wk.dis:hover{background:var(--surface-1)}
+.wk.dis{background:repeating-linear-gradient(135deg,var(--surface-1) 0,var(--surface-1) 6px,var(--surface-2) 6px,var(--surface-2) 12px);color:var(--text-muted);cursor:not-allowed;border:0.5px dashed var(--border-strong);pointer-events:auto}
+.wk.dis:hover{background:repeating-linear-gradient(135deg,var(--surface-1) 0,var(--surface-1) 6px,var(--surface-2) 6px,var(--surface-2) 12px)}
+.wk.dis .bd{background:transparent;color:var(--text-muted);padding-left:0}
 .bd{display:inline-block;font-size:12px;padding:2px 8px;border-radius:var(--radius);background:var(--surface-1);color:var(--text-secondary)}
 .bd.ok{background:var(--bg-success);color:var(--text-success)}
 .bd.wn{background:var(--bg-warning);color:var(--text-warning)}
@@ -2747,11 +2748,12 @@ body[data-not-sent] > #vis-container ~ #not-sent {
       <div style="font-size:13px;color:var(--text-secondary);margin-top:10px" id="mg"></div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text-muted)">
+  <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text-muted);flex-wrap:wrap">
     <span>샘플 시점</span>
     <button class="dm" data-c="1" style="padding:2px 10px;font-size:12px">1주차</button>
     <button class="dm" data-c="2" style="padding:2px 10px;font-size:12px">2주차</button>
     <button class="dm" data-c="3" style="padding:2px 10px;font-size:12px">3주차</button>
+    <button id="rs" style="padding:2px 10px;font-size:12px;margin-left:auto">초기화</button>
   </div>
 </div>
 <script>
@@ -2765,9 +2767,8 @@ const W=[
  {t:'뷰티 구매 적립',c:'뷰티 5만원 이상 · 5% (최대 5천원)',i:'sparkles',min:50000,rate:.05,cap:5000,p:[['11/13','립 틴트',22000]]}]},
 {n:3,r:'11/16 ~ 11/22',ev:[
  {t:'가전 구매 적립',c:'가전 20만원 이상 · 3% (최대 2만원)',i:'plug',min:200000,rate:.03,cap:20000,p:[['11/17','청소기',240000]]}]}];
-const PRESET={1:{1:false,2:false,3:false},2:{1:true,2:false,3:false},3:{1:true,2:false,3:false}};
 const TH=[['var(--bg-accent)','var(--text-accent)'],['var(--bg-success)','var(--text-success)'],['var(--bg-warning)','var(--text-warning)']];
-let cur=1,sel=1,applied=Object.assign({},PRESET[1]),step=0;
+let cur=1,sel=1,applied={1:false,2:false,3:false},step=0;
 const f=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 function pur(w,e){return w.n>cur?[]:e.p}
 function calc(w,e){const p=pur(w,e),s=p.reduce((a,x)=>a+x[2],0),ok=s>=e.min;return{p,s,ok,rw:ok?(e.fix?e.fix:Math.min(Math.floor(s*e.rate),e.cap)):0}}
@@ -2785,7 +2786,9 @@ function layout(){
 function render(){
  let t=0;W.forEach(w=>{if(w.n<=cur&&applied[w.n])t+=wsum(w)});
  tot.textContent=f(t);rng.textContent='(1주 ~ '+cur+'주차)';
- wks.innerHTML=W.map(w=>{const s=st(w),d=w.n>cur;return `<button class="wk ${w.n===sel?'on':''} ${d?'dis':''}" data-w="${w.n}" ${d?'disabled aria-disabled="true"':''}><div style="font-weight:500;${d?'':'color:var(--text-primary)'}">${w.n}주차</div><div style="font-size:12px">${w.r}</div><div style="margin-top:6px"><span class="bd ${s[1]}">${s[0]}</span></div></button>`}).join('');
+ wks.innerHTML=W.map(w=>{const s=st(w),d=w.n>cur;
+  const head=d?`<div style="display:flex;justify-content:space-between;align-items:center;font-weight:500"><span>${w.n}주차</span><i class="ti ti-lock" aria-hidden="true"></i></div>`:`<div style="font-weight:500;color:var(--text-primary)">${w.n}주차</div>`;
+  return `<button class="wk ${w.n===sel?'on':''} ${d?'dis':''}" data-w="${w.n}" ${d?'disabled aria-disabled="true"':''}>${head}<div style="font-size:12px">${w.r}</div><div style="margin-top:6px"><span class="bd ${s[1]}">${s[0]}</span></div></button>`}).join('');
  const w=W[sel-1];
  wt.textContent=w.n+'주차 적립 이벤트';
  ws.textContent=w.r;
@@ -2821,6 +2824,7 @@ car.onclick=x=>{const b=x.target.closest('button[data-e]');if(!b||mv>5)return;
  mg.textContent=off?'신청하지 않은 주차라 적립 대상이 아니에요.':c.ok?'조건을 달성했어요.':'조건까지 '+f(e.min-c.s)+' 더 구매하면 적립돼요.';
  modal.style.display='block';modal.scrollIntoView({block:'nearest'})};
 mx.onclick=()=>{modal.style.display='none'};
-document.querySelectorAll('.dm').forEach(b=>b.onclick=()=>{cur=+b.dataset.c;sel=cur;applied=Object.assign({},PRESET[cur]);modal.style.display='none';msg.textContent='';render()});
+document.querySelectorAll('.dm').forEach(b=>b.onclick=()=>{cur=+b.dataset.c;sel=cur;modal.style.display='none';msg.textContent='';render()});
+rs.onclick=()=>{cur=1;sel=1;applied={1:false,2:false,3:false};modal.style.display='none';msg.textContent='';render()};
 render();
 </script></div></body></html>
